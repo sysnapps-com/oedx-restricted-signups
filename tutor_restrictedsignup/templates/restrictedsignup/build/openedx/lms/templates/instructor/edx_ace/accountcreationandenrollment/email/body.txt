@@ -1,6 +1,6 @@
 Hola,
 
-¡Te damos la bienvenida a {{ site_name }}!
+¡Te damos la bienvenida a Heritage Global Institute!
 
 Hemos creado tu cuenta y te hemos dado de alta en el curso {{ course_name }}. Ya puedes acceder a la plataforma y comenzar tu experiencia de aprendizaje.
 
