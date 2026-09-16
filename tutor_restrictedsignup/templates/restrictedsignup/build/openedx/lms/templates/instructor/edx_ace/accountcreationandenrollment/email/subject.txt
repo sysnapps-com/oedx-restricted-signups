@@ -1,0 +1,3 @@
+{% raw -%}
+You've been enrolled in {{ course_name|default("a course") }}
+{%- endraw %}

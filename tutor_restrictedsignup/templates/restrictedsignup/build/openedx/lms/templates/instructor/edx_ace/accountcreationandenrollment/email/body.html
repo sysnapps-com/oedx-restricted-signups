@@ -1,0 +1,27 @@
+{% raw %}
+<!--
+  EDIT ME: this replaces edx-platform's stock "account created + enrolled"
+  email body. Variables available depend on the edx-platform release —
+  verify against the original template in your image before relying on
+  variables beyond the ones below (platform_name is safe on all releases).
+-->
+<p>Hello,</p>
+
+<p>
+  An account has been created for you on {{ platform_name }}, and you have
+  been enrolled in a course.
+</p>
+
+<p>
+  <strong>Username:</strong> {{ user_username|default("(see separate message)") }}<br/>
+  <strong>Temporary password:</strong> {{ user_password|default("(see separate message)") }}
+</p>
+
+<p>
+  Log in here: <a href="{{ lms_url|default('') }}">{{ lms_url|default('') }}</a>
+</p>
+
+<p>
+  If you have questions, contact your course administrator.
+</p>
+{% endraw %}
