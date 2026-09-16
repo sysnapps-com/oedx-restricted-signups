@@ -129,6 +129,7 @@ CUSTOM_EMAIL_TEMPLATE_DOCKERFILE_PATCH = """
 {% if RESTRICTEDSIGNUP_CUSTOM_EMAIL_TEMPLATE %}
 COPY --chown=app:app plugins/restrictedsignup/build/openedx/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/subject.txt /openedx/edx-platform/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/subject.txt
 COPY --chown=app:app plugins/restrictedsignup/build/openedx/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/body.html /openedx/edx-platform/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/body.html
+COPY --chown=app:app plugins/restrictedsignup/build/openedx/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/body.html /openedx/edx-platform/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/body.txt
 {% endif %}
 """
 
