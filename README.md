@@ -48,7 +48,7 @@ workaround.
 ## Installation
 
 ```bash
-pip install git+https://github.com/YOUR-ORG/tutor-contrib-restrictedsignup.git
+pip install git+https://github.com/sysnapps-com/oedx-restricted-signups.git
 # or, if published to PyPI:
 # pip install tutor-contrib-restrictedsignup
 
