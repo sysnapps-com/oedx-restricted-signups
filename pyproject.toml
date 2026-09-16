@@ -9,7 +9,7 @@ description = "Tutor plugin: disable public self-registration and enable instruc
 readme = "README.md"
 requires-python = ">=3.8"
 license = { text = "AGPL-3.0-or-later" }
-dependencies = ["tutor>=17.0.0,<20.0.0"]
+dependencies = ["tutor>=17.0.0,<23.0.0"]
 
 [project.entry-points."tutor.plugin.v1"]
 restrictedsignup = "tutor_restrictedsignup.plugin"
