@@ -8,24 +8,30 @@
 <p>Hola,</p>
 
 <p>
-  ¡Te damos la bienvenida a <strong>{{ platform_name }}</strong>!
+  ¡Te damos la bienvenida a <strong>{{ site_name }}</strong>!
 </p>
 
 <p>
   Hemos creado tu cuenta y te hemos dado de alta en el curso
-  <strong>{{ course_name|default("asignatura") }}</strong>.
+  <strong>{{ course_name }}</strong>.
   <strong>Ya puedes acceder a la plataforma y comenzar tu experiencia de aprendizaje.</strong>
 </p>
 
 <p>
   <strong>Datos de acceso:</strong><br/>
-  <strong>Usuario:</strong> {{ user_username|default("(consulta el mensaje separado)") }}<br/>
-  <strong>Contraseña temporal:</strong> {{ user_password|default("(consulta el mensaje separado)") }}
+  <strong>Correo electrónico:</strong> {{ email_address }}<br/>
+  <strong>Usuario:</strong> {{ user_username }}
+  <strong>Contraseña temporal:</strong> {{ password }}
 </p>
 
 <p>
   <strong>Para comenzar, ingresa a la plataforma:</strong><br/>
-  <a href="{{ lms_url|default('') }}">{{ lms_url|default('') }}</a>
+  <a href="https://{{ site_name }}">https://{{ site_name }}</a>
+</p>
+
+<p>
+  También puedes acceder directamente a tu curso desde el siguiente enlace:<br/>
+  <a href="{{ course_url }}">{{ course_url }}</a>
 </p>
 
 <p>
@@ -33,15 +39,23 @@
 </p>
 
 <p>
-  <strong>Te recomendamos iniciar sesión cuanto antes y cambiar tu contraseña temporal por una contraseña personal y segura.</strong>
+  <strong>
+    Te recomendamos iniciar sesión cuanto antes y cambiar tu contraseña temporal
+    por una contraseña personal y segura.
+  </strong>
 </p>
 
 <p>
-  Si tienes alguna duda o necesitas ayuda para acceder, ponte en contacto con el administrador de tu curso.
+  Si tienes alguna duda o necesitas ayuda para acceder, ponte en contacto con
+  el administrador de tu curso.
 </p>
 
 <p>
-  ¡Te deseamos mucho éxito en tu trayectoría de aprendizaje!
+  ¡Te deseamos mucho éxito en tu trayectoria de aprendizaje!
 </p>
 {% endraw %}
+
+
+
+
 

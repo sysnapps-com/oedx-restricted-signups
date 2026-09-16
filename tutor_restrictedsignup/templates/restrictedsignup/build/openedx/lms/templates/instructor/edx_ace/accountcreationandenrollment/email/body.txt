@@ -1,18 +1,22 @@
 Hola,
 
-¡Te damos la bienvenida a {{ platform_name }}!
+¡Te damos la bienvenida a {{ site_name }}!
 
-Hemos creado tu cuenta y te hemos dado de alta en el curso {{ course_name|default("a course") }}. Ya puedes acceder a la plataforma y comenzar tu experiencia de aprendizaje.
+Hemos creado tu cuenta y te hemos dado de alta en el curso {{ course_name }}. Ya puedes acceder a la plataforma y comenzar tu experiencia de aprendizaje.
 
 DATOS DE ACCESO
 
-Usuario: {{ user_username|default("(consulta el mensaje separado)") }}
-Contraseña temporal: {{ user_password|default("(consulta el mensaje separado)") }}
+Correo electrónico: {{ email_address }}
+Usuario: {{ user_username }}
+Contraseña temporal: {{ user_password }}
 
 PARA COMENZAR
 
 Ingresa a la plataforma:
-{{ lms_url|default('') }}
+https://{{ site_name }}
+
+También puedes acceder directamente a tu curso desde el siguiente enlace:
+{{ course_url }}
 
 Una vez que hayas iniciado sesión, podrás acceder al curso y comenzar tus actividades.
 
@@ -20,4 +24,6 @@ Te recomendamos iniciar sesión cuanto antes y cambiar tu contraseña temporal p
 
 Si tienes alguna duda o necesitas ayuda para acceder, ponte en contacto con el administrador de tu curso.
 
-¡Te deseamos mucho éxito en tu aprendizaje!
+ 
+
+¡Te deseamos mucho éxito en tu trayectoria de aprendizaje!
