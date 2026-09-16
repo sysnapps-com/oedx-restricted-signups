@@ -1,0 +1,6 @@
+{% raw %}
+*** REPLACE THIS FILE with your platform's real from_name.txt before enabling ***
+Run: tutor local exec lms cat /openedx/edx-platform/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/from_name.txt
+This is the sender "From" display name shown in the recipient's inbox.
+{{ platform_name }}
+{% endraw %}

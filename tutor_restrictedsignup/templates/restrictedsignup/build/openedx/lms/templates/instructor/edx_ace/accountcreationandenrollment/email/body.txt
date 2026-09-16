@@ -1,0 +1,14 @@
+{% raw %}
+*** REPLACE THIS FILE with your platform's real body.txt before enabling ***
+Run: tutor local exec lms cat /openedx/edx-platform/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/body.txt
+Paste that output here, then edit the wording/branding as you like.
+This is the plain-text fallback shown by email clients that don't render HTML.
+
+Hola,
+
+¡Te damos la bienvenida!
+
+Hemos creado tu cuenta en {{ platform_name }}, y te hemos dado de alta en el curso.
+
+Para comenzar, ingresa a la plataforma: {{ lms_url }}
+{% endraw %}

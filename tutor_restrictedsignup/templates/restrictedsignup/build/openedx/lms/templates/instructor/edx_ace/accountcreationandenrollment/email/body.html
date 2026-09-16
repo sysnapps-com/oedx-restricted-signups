@@ -8,7 +8,7 @@
 <p>Hola,</p>
 
 <p>
-  ¡Te damos la bienvenida a <strong>{{ site_name }}</strong>!
+  ¡Te damos la bienvenida a <strong>{{ platform_name }}</strong>!
 </p>
 
 <p>
@@ -21,12 +21,12 @@
   <strong>Datos de acceso:</strong><br/>
   <strong>Correo electrónico:</strong> {{ email_address }}<br/>
   <strong>Usuario:</strong> {{ user_username }}
-  <strong>Contraseña temporal:</strong> {{ password }}
+  <strong>Contraseña temporal:</strong> {{ user_password }}
 </p>
 
 <p>
   <strong>Para comenzar, ingresa a la plataforma:</strong><br/>
-  <a href="https://{{ site_name }}">https://{{ site_name }}</a>
+  <a href="{{ lms_url|default('') }}">{{ lms_url|default('') }}</a>
 </p>
 
 <p>
@@ -54,8 +54,5 @@
   ¡Te deseamos mucho éxito en tu trayectoria de aprendizaje!
 </p>
 {% endraw %}
-
-
-
 
 

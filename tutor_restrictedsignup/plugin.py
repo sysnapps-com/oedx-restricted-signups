@@ -11,7 +11,7 @@ See README.md for full documentation, verified behavior, and known caveats.
 """
 import importlib.resources
 
-from tutor import hooks
+from tutor import env, hooks
 
 # ---------------------------------------------------------------------------
 # 1. CONFIGURATION — toggles the operator can override with
@@ -34,6 +34,17 @@ hooks.Filters.CONFIG_DEFAULTS.add_items(
         # templates/instructor/edx_ace/accountcreationandenrollment/email/
         # and rebuilt the openedx image. See README "Custom email template".
         ("RESTRICTEDSIGNUP_CUSTOM_EMAIL_TEMPLATE", False),
+        # ALLOW_AUTOMATED_SIGNUPS's "Register/Enroll Students" CSV section
+        # only exists on the LEGACY (pre-Verawood) Instructor Dashboard.
+        # Open edX's new React instructor dashboard, default since the
+        # Verawood release (openedx/openedx-platform#38396, merged
+        # 2026-04-23), does not have this feature — it treats unregistered
+        # emails as a pending invite, not a full account-creation flow.
+        # This toggle flips the `instructor.legacy_instructor_dashboard`
+        # waffle flag to True at LMS init time so the feature is actually
+        # reachable. See README "Why am I not seeing the CSV upload
+        # section?" for the deprecation timeline and caveats.
+        ("RESTRICTEDSIGNUP_FORCE_LEGACY_DASHBOARD", True),
     ]
 )
 
@@ -115,10 +126,13 @@ MFE_CONFIG["SHOW_REGISTRATION_LINKS"] = False
 #    overriding the stock ones.
 #
 #    IMPORTANT: exact filenames/format can shift between Open edX releases.
-#    Before enabling this in production, confirm the real filenames inside
-#    your running LMS container:
+#    This plugin ships 5 files (subject.txt, body.txt, body.html,
+#    from_name.txt, head.html) as PLACEHOLDERS clearly marked
+#    "REPLACE THIS FILE" — before enabling, confirm the real filenames/
+#    content inside your running LMS container:
 #      tutor local exec lms find /openedx/edx-platform/lms/templates/instructor/edx_ace/accountcreationandenrollment -type f
-#    and rename the files under templates/.../email/ in this plugin to match.
+#    then replace each placeholder's content with your platform's real
+#    template (via `tutor local exec lms cat <path>`) before customizing.
 # ---------------------------------------------------------------------------
 hooks.Filters.ENV_TEMPLATE_ROOTS.add_item(
     str(importlib.resources.files("tutor_restrictedsignup") / "templates")
@@ -128,10 +142,32 @@ hooks.Filters.ENV_TEMPLATE_TARGETS.add_item(("restrictedsignup/build", "plugins"
 CUSTOM_EMAIL_TEMPLATE_DOCKERFILE_PATCH = """
 {% if RESTRICTEDSIGNUP_CUSTOM_EMAIL_TEMPLATE %}
 COPY --chown=app:app plugins/restrictedsignup/build/openedx/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/subject.txt /openedx/edx-platform/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/subject.txt
+COPY --chown=app:app plugins/restrictedsignup/build/openedx/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/body.txt /openedx/edx-platform/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/body.txt
 COPY --chown=app:app plugins/restrictedsignup/build/openedx/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/body.html /openedx/edx-platform/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/body.html
+COPY --chown=app:app plugins/restrictedsignup/build/openedx/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/from_name.txt /openedx/edx-platform/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/from_name.txt
+COPY --chown=app:app plugins/restrictedsignup/build/openedx/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/head.html /openedx/edx-platform/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/head.html
 {% endif %}
 """
 
 hooks.Filters.ENV_PATCHES.add_item(
     ("openedx-dockerfile-post-python-requirements", CUSTOM_EMAIL_TEMPLATE_DOCKERFILE_PATCH)
 )
+
+# ---------------------------------------------------------------------------
+# 6. FORCE THE LEGACY INSTRUCTOR DASHBOARD (where ALLOW_AUTOMATED_SIGNUPS
+#    actually lives — see the long comment on
+#    RESTRICTEDSIGNUP_FORCE_LEGACY_DASHBOARD above).
+#
+#    This runs as an LMS init task, since a waffle flag is a database row,
+#    not a Django setting — it can't be set via ENV_PATCHES.
+# ---------------------------------------------------------------------------
+INIT_TASK_CONTENT = env.read_template_file(
+    "restrictedsignup", "tasks", "lms", "init", "restrictedsignup.sh"
+)
+# Filter name has changed across Tutor releases (COMMANDS_INIT in some
+# versions, CLI_DO_INIT_TASKS in others) — use whichever this install has.
+_init_filter = getattr(hooks.Filters, "CLI_DO_INIT_TASKS", None) or getattr(
+    hooks.Filters, "COMMANDS_INIT", None
+)
+if _init_filter is not None:
+    _init_filter.add_item(("lms", INIT_TASK_CONTENT))

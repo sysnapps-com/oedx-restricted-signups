@@ -4,12 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tutor-contrib-restrictedsignup"
-version = "1.0.0"
+version = "1.2.0"
 description = "Tutor plugin: disable public self-registration and enable instructor-driven CSV account creation + enrollment on Open edX"
 readme = "README.md"
 requires-python = ">=3.8"
 license = { text = "AGPL-3.0-or-later" }
-dependencies = ["tutor>=17.0.0,<23.0.0"]
+dependencies = ["tutor>=17.0.0"]
+urls = { Repository = "https://github.com/sysnapps-com/oedx-restricted-signups" }
 
 [project.entry-points."tutor.plugin.v1"]
 restrictedsignup = "tutor_restrictedsignup.plugin"
