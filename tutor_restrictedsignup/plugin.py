@@ -146,7 +146,7 @@ MFE_CONFIG["SHOW_REGISTRATION_LINKS"] = False
 hooks.Filters.ENV_TEMPLATE_ROOTS.add_item(
     str(importlib.resources.files("tutor_restrictedsignup") / "templates")
 )
-hooks.Filters.ENV_TEMPLATE_TARGETS.add_item(("restrictedsignup/build", "plugins"))
+hooks.Filters.ENV_TEMPLATE_TARGETS.add_item(("restrictedsignup/build", "build/openedx"))
 
 CUSTOM_EMAIL_TEMPLATE_DOCKERFILE_PATCH = """
 {% if RESTRICTEDSIGNUP_CUSTOM_EMAIL_TEMPLATE %}
