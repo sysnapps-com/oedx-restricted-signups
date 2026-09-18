@@ -45,6 +45,15 @@ hooks.Filters.CONFIG_DEFAULTS.add_items(
         # reachable. See README "Why am I not seeing the CSV upload
         # section?" for the deprecation timeline and caveats.
         ("RESTRICTEDSIGNUP_FORCE_LEGACY_DASHBOARD", True),
+        # Only used when RESTRICTEDSIGNUP_CUSTOM_EMAIL_TEMPLATE is True.
+        # The legacy Instructor Dashboard's account-creation email uses
+        # {{ logo_url }} in its base template, which resolves to the
+        # DEFAULT theme's logo even when the rest of the site correctly
+        # runs a custom theme (e.g. Paragon-based) — the legacy dashboard
+        # renders emails in a different context that doesn't pick up the
+        # active theme. Set this to your own hosted logo image URL to fix
+        # the branding shown in these emails specifically.
+        ("RESTRICTEDSIGNUP_EMAIL_LOGO_URL", ""),
     ]
 )
 
@@ -146,6 +155,13 @@ COPY --chown=app:app plugins/restrictedsignup/build/openedx/lms/templates/instru
 COPY --chown=app:app plugins/restrictedsignup/build/openedx/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/body.html /openedx/edx-platform/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/body.html
 COPY --chown=app:app plugins/restrictedsignup/build/openedx/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/from_name.txt /openedx/edx-platform/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/from_name.txt
 COPY --chown=app:app plugins/restrictedsignup/build/openedx/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/head.html /openedx/edx-platform/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/head.html
+# The base ACE email template (logo, header, footer) shared by ALL instructor
+# ACE emails (account creation, enrollment, beta tester add/remove, etc).
+# Overridden here specifically to fix the logo not respecting the active
+# theme when rendered from the legacy Instructor Dashboard — see
+# RESTRICTEDSIGNUP_EMAIL_LOGO_URL. This changes the header/footer for every
+# email in this list, not just account-creation.
+COPY --chown=app:app plugins/restrictedsignup/build/openedx/openedx/core/djangoapps/ace_common/templates/ace_common/edx_ace/common/base_body.html /openedx/edx-platform/openedx/core/djangoapps/ace_common/templates/ace_common/edx_ace/common/base_body.html
 {% endif %}
 """
 

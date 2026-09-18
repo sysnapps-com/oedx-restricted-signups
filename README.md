@@ -34,13 +34,10 @@ pages to a new React micro-frontend, `frontend-app-instructor-dashboard`.
 **The "Register/Enroll Students" CSV section — the one `ALLOW_AUTOMATED_SIGNUPS`
 turns on, which creates full accounts (email, username, name, country) — was
 never ported to the new dashboard.** Its Membership/Enrollments tab instead
-sends unregistered emails a *pending enrollment invite* (they must still
-self-register), which is a materially different, weaker behavior than what
-you asked for.
+sends unregistered emails a *pending enrollment invite* (they must still self-register).
 
 Confirmed via Open edX's own GitHub issue tracker (`frontend-app-instructor-dashboard`
-PR #233): the new dashboard's backend "does not enroll unregistered
-add[resses]" the way the legacy CSV feature does.
+PR #233): the new dashboard's backend "does not enroll unregistered address[es]" the way the legacy CSV feature does.
 
 **The fix:** Open edX ships a waffle flag, `instructor.legacy_instructor_dashboard`,
 that reverts to the old dashboard. This plugin sets it to `True` for everyone
@@ -122,6 +119,7 @@ All settings are booleans, changeable with `tutor config save --set NAME=value`:
 | `RESTRICTEDSIGNUP_SKIP_EMAIL_VALIDATION` | `True` | Master switch for #4 |
 | `RESTRICTEDSIGNUP_CUSTOM_EMAIL_TEMPLATE` | `False` | Master switch for #5 |
 | `RESTRICTEDSIGNUP_FORCE_LEGACY_DASHBOARD` | `True` | Master switch for #6 — see warning above |
+| `RESTRICTEDSIGNUP_EMAIL_LOGO_URL` | `""` (empty) | Logo shown in ACE emails when #5 is on — **must be set** to a real URL before enabling #5, or the logo renders broken |
 
 Example — keep everything except the email-validation skip:
 
@@ -143,68 +141,96 @@ tutor_restrictedsignup/templates/restrictedsignup/build/openedx/lms/templates/in
   from_name.txt    — sender display name
   head.html        — <style>/CSS block used by body.html
 ```
+plus a **shared base template**, used by every instructor ACE email (account
+creation, enrollment, beta-tester add/remove, etc.), not just this one:
+```
+tutor_restrictedsignup/templates/restrictedsignup/build/openedx/openedx/core/djangoapps/ace_common/templates/ace_common/edx_ace/common/base_body.html
+```
 (Confirmed against a real Sumac-based Tutor deployment — your release may
 differ, always verify per step 1 below.)
 
-Every one of these ships as a **placeholder clearly marked "REPLACE THIS
-FILE"** — not your platform's real wording — because the exact content is
-Open-edX-release-specific and this plugin cannot know it in advance.
+`subject.txt` and `body.html` ship pre-filled with a real, tested Spanish
+version of the account-creation email (confirmed variable names —
+`platform_name`, `course_name`, `email_address`, `password`, `site_name`,
+`course_url` — sourced directly from edx-platform's stock English template,
+not guessed). Edit the wording freely, but don't rename or invent new
+`{{ variable }}` names: edx-platform only supplies the ones listed above for
+this particular email — there is, for example, no per-user `username`
+variable available here, so don't add `{{ user_username }}` expecting it to
+populate.
 
-### Steps to customize
+### Fixing the email logo (`RESTRICTEDSIGNUP_EMAIL_LOGO_URL`)
 
-1. **Pull your platform's real template files.** Confirm the filenames match
-   first (they can shift between releases):
+The legacy Instructor Dashboard renders its emails through
+`base_body.html`, which normally shows `{{ logo_url }}` — but that variable
+resolves to your **default** Open edX theme's logo, even when your site
+correctly runs a custom theme (e.g. a Paragon-based one) everywhere else.
+This is a known quirk of the legacy dashboard's rendering context, not a
+misconfiguration on your end.
+
+The shipped `base_body.html` override hardcodes your logo instead of
+relying on `{{ logo_url }}`. Set it via:
+```bash
+tutor config save --set RESTRICTEDSIGNUP_EMAIL_LOGO_URL="https://your-cdn/logo.png"
+```
+**This must be a real, publicly reachable image URL** — leaving it blank
+(the default) renders a broken image (`<img src="">`) in every one of these
+emails, since the value is spliced directly into the HTML.
+
+Everything else in `base_body.html` (social links, footer, mobile app
+buttons, unsubscribe link) is left as edx-platform's stock behavior — only
+the logo line is overridden.
+
+### Steps to customize further
+
+1. **Pull your platform's real template files** if you want to verify
+   filenames/content beyond what's already confirmed here:
    ```bash
    tutor local exec lms find /openedx/edx-platform/lms/templates/instructor/edx_ace/accountcreationandenrollment -type f
-   ```
-   Then extract each one's real content, e.g.:
-   ```bash
-   tutor local exec lms cat /openedx/edx-platform/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/subject.txt
    tutor local exec lms cat /openedx/edx-platform/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/body.txt
-   tutor local exec lms cat /openedx/edx-platform/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/body.html
    tutor local exec lms cat /openedx/edx-platform/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/from_name.txt
    tutor local exec lms cat /openedx/edx-platform/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/head.html
    ```
-2. **Replace each placeholder file's content** in this plugin with what you
-   extracted, then edit the wording/branding as you like. Every `{{ var }}`
-   you keep must already exist in the original — don't invent new variable
-   names, since edx-platform (not this plugin) supplies their values at
-   send time.
+2. **Edit `subject.txt` / `body.html`** (or `body.txt`, `from_name.txt`,
+   `head.html`) to change wording/branding further.
 
    **Critical — keep the `{% raw %}` / `{% endraw %}` wrapper around your
    content.** Tutor renders every template file through its own Jinja
    engine before the file ever reaches edx-platform. `{{ platform_name }}`,
-   `{{ site_name }}`, etc. are **Django/ACE variables**, meant to be filled
-   in later by edx-platform when it actually sends the email — not by
-   Tutor. If you paste your extracted content in *without* the `{% raw %}`
+   `{{ password }}`, `{{ site_name }}`, etc. are **Django/ACE variables**,
+   meant to be filled in later by edx-platform when it actually sends the
+   email — not by Tutor. If you paste content in *without* the `{% raw %}`
    wrapper, Tutor's Jinja will try to resolve those variables itself at
-   build time, using its own (different) config namespace, and fail with
-   an error like:
+   build time, using its own (different) config namespace, and fail with:
    ```
    Error rendering template ... Error: Missing configuration value: 'site_name' is undefined
    ```
-   The fix is always the same: wrap your real content in `{% raw %}` at
-   the top and `{% endraw %}` at the bottom, exactly as the shipped
-   placeholders already do — don't remove those tags when you replace the
-   text inside them.
-3. If your `find` output shows **different filenames** than the 5 above,
+   `base_body.html` uses a different pattern — most of the file is inside
+   one `{% raw %}` block, but it briefly closes/reopens around
+   `{{ RESTRICTEDSIGNUP_EMAIL_LOGO_URL }}` so *that one* value **is**
+   substituted by Tutor at build time (it's a plugin config value, not a
+   Django/ACE one). Don't remove that specific `{% endraw %}...{% raw %}`
+   pair, or the logo URL will stop being substituted.
+3. If a `find` shows **different filenames** than the 5 listed above,
    rename the files in this plugin to match, and update the `COPY` lines in
    `tutor_restrictedsignup/plugin.py` (`CUSTOM_EMAIL_TEMPLATE_DOCKERFILE_PATCH`)
    accordingly.
 4. Enable and rebuild:
    ```bash
    tutor config save --set RESTRICTEDSIGNUP_CUSTOM_EMAIL_TEMPLATE=true
+   tutor config save --set RESTRICTEDSIGNUP_EMAIL_LOGO_URL="https://your-cdn/logo.png"
    tutor images build openedx
    tutor local restart lms cms
    ```
 5. **Test before relying on it**: trigger a real CSV upload against a test
    course/user and check the email that arrives, in both HTML and plain-text
-   mail clients.
+   mail clients, and confirm the logo actually loads (some mail clients
+   block remote images by default — that's normal, not a bug).
 
-This ships **off by default**, and every template ships as an obvious
-placeholder rather than a guessed-at real template, precisely because both
-the filenames and their content are version-sensitive — never enable this
-without first swapping in your platform's real templates.
+This ships **off by default** precisely because both the filenames/content
+and the logo-URL fix are specific to your deployment — never enable this
+without setting `RESTRICTEDSIGNUP_EMAIL_LOGO_URL` and reviewing the
+Spanish wording against your own branding voice.
 
 ## Known caveats / things to check on your platform
 

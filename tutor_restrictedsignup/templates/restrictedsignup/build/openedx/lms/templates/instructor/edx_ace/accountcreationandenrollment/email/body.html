@@ -1,58 +1,61 @@
 {% raw %}
-<!--
-  EDIT ME: this replaces edx-platform's stock "account created + enrolled"
-  email body. Variables available depend on the edx-platform release —
-  verify against the original template in your image before relying on
-  variables beyond the ones below (platform_name is safe on all releases).
--->
-<p>Hola,</p>
+{% extends 'ace_common/edx_ace/common/base_body.html' %}
 
-<p>
-  ¡Te damos la bienvenida a <strong>{{ platform_name }}</strong>!
-</p>
+{% load i18n %}
+{% load static %}
+{% block content %}
+<table width="100%" align="left" border="0" cellpadding="0" cellspacing="0" role="presentation">
+    <tr>
+        <td>
+            <p>Hola,</p>
 
-<p>
-  Hemos creado tu cuenta y te hemos dado de alta en el curso
-  <strong>{{ course_name }}</strong>.
-  <strong>Ya puedes acceder a la plataforma y comenzar tu experiencia de aprendizaje.</strong>
-</p>
+            <p>
+              ¡Te damos la bienvenida a <strong>{{ platform_name }}</strong>!
+            </p>
 
-<p>
-  <strong>Datos de acceso:</strong><br/>
-  <strong>Correo electrónico:</strong> {{ email_address }}<br/>
-  <strong>Usuario:</strong> {{ user_username }}
-  <strong>Contraseña temporal:</strong> {{ user_password }}
-</p>
+            <p>
+              Hemos creado tu cuenta y te hemos dado de alta en el curso
+              <strong>{{ course_name }}</strong>.
+              <strong>Ya puedes acceder a la plataforma y comenzar tu experiencia de aprendizaje.</strong>
+            </p>
 
-<p>
-  <strong>Para comenzar, ingresa a la plataforma:</strong><br/>
-  <a href="{{ lms_url|default('') }}">{{ lms_url|default('') }}</a>
-</p>
+            <p>
+              <strong>Datos de acceso:</strong><br/>
+              <strong>Correo electrónico:</strong> {{ email_address }}<br/>
+              <strong>Contraseña temporal:</strong> {{ password }}
+            </p>
 
-<p>
-  También puedes acceder directamente a tu curso desde el siguiente enlace:<br/>
-  <a href="{{ course_url }}">{{ course_url }}</a>
-</p>
+            <p>
+              <strong>Para comenzar, ingresa a la plataforma:</strong><br/>
+              <a href="https://{{ site_name }}">https://{{ site_name }}</a>
+            </p>
 
-<p>
-  Una vez que hayas iniciado sesión, podrás acceder al curso y comenzar tus actividades.
-</p>
+            <p>
+              También puedes acceder directamente a tu curso desde el siguiente enlace:<br/>
+              <a href="{{ course_url }}">{{ course_url }}</a>
+            </p>
 
-<p>
-  <strong>
-    Te recomendamos iniciar sesión cuanto antes y cambiar tu contraseña temporal
-    por una contraseña personal y segura.
-  </strong>
-</p>
+            <p>
+              Una vez que hayas iniciado sesión, podrás acceder al curso y comenzar tus actividades.
+            </p>
 
-<p>
-  Si tienes alguna duda o necesitas ayuda para acceder, ponte en contacto con
-  el administrador de tu curso.
-</p>
+            <p>
+              <strong>
+                Te recomendamos iniciar sesión cuanto antes y cambiar tu contraseña temporal
+                por una contraseña personal y segura.
+              </strong>
+            </p>
 
-<p>
-  ¡Te deseamos mucho éxito en tu trayectoria de aprendizaje!
-</p>
+            <p>
+              Si tienes alguna duda o necesitas ayuda para acceder, ponte en contacto con
+              el administrador de tu curso.
+            </p>
+
+            <p>
+              ¡Te deseamos mucho éxito en tu trayectoria de aprendizaje!
+            </p>
+        </td>
+    </tr>
+</table>
+{% endblock %}
 {% endraw %}
-
-

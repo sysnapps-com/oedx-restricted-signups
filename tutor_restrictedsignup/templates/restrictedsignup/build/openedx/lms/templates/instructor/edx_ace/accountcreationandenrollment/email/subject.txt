@@ -1,3 +1,3 @@
 {% raw -%}
-Bienvenido a {{ site_name }} , al curso {{ course_name }}. 
+¡Te damos la bienvenida a {{ course_name }}!
 {%- endraw %}

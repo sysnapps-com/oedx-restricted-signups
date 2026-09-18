@@ -4,11 +4,10 @@ Run: tutor local exec lms cat /openedx/edx-platform/lms/templates/instructor/edx
 Paste that output here, then edit the wording/branding as you like.
 This is the plain-text fallback shown by email clients that don't render HTML.
 
-Hola,
+Hello,
 
-¡Te damos la bienvenida!
+An account has been created for you on {{ platform_name }}, and you have
+been enrolled in a course.
 
-Hemos creado tu cuenta en {{ platform_name }}, y te hemos dado de alta en el curso.
-
-Para comenzar, ingresa a la plataforma: {{ lms_url }}
+Log in here: {{ lms_url }}
 {% endraw %}
