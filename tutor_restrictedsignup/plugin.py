@@ -135,13 +135,10 @@ MFE_CONFIG["SHOW_REGISTRATION_LINKS"] = False
 #    overriding the stock ones.
 #
 #    IMPORTANT: exact filenames/format can shift between Open edX releases.
-#    This plugin ships 5 files (subject.txt, body.txt, body.html,
-#    from_name.txt, head.html) as PLACEHOLDERS clearly marked
-#    "REPLACE THIS FILE" — before enabling, confirm the real filenames/
-#    content inside your running LMS container:
+#    Before enabling this in production, confirm the real filenames inside
+#    your running LMS container:
 #      tutor local exec lms find /openedx/edx-platform/lms/templates/instructor/edx_ace/accountcreationandenrollment -type f
-#    then replace each placeholder's content with your platform's real
-#    template (via `tutor local exec lms cat <path>`) before customizing.
+#    and rename the files under templates/.../email/ in this plugin to match.
 # ---------------------------------------------------------------------------
 hooks.Filters.ENV_TEMPLATE_ROOTS.add_item(
     str(importlib.resources.files("tutor_restrictedsignup") / "templates")
@@ -170,7 +167,7 @@ hooks.Filters.ENV_PATCHES.add_item(
 )
 
 # ---------------------------------------------------------------------------
-# 6. FORCE THE LEGACY INSTRUCTOR DASHBOARD (where ALLOW_AUTOMATED_SIGNUPS
+# 5. FORCE THE LEGACY INSTRUCTOR DASHBOARD (where ALLOW_AUTOMATED_SIGNUPS
 #    actually lives — see the long comment on
 #    RESTRICTEDSIGNUP_FORCE_LEGACY_DASHBOARD above).
 #
