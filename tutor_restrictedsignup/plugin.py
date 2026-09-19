@@ -1,6 +1,6 @@
 """
-tutor-contrib-restrictedsignup
-===============================
+tutor-contrib-restrictedsignup v1.3.0
+=======================================
 
 Disables public self-registration on an Open edX platform run with Tutor,
 and turns on the instructor-driven "Register/Enroll Students" CSV upload
@@ -82,21 +82,42 @@ MFE_CONFIG["SHOW_REGISTRATION_LINKS"] = False
 )
 
 # ---------------------------------------------------------------------------
-# 4. CUSTOM EMAIL TEMPLATES - CORRECTED PATHS (no plugins/ prefix)
+# 4. CUSTOM EMAIL TEMPLATES
+#
+# CORRECT APPROACH: Copy from installed Python package, not from build context.
+# The template files are included in the package via MANIFEST.in and
+# pyproject.toml [tool.setuptools.package-data], so they exist at:
+#   /openedx/venv/lib/python*/site-packages/tutor_restrictedsignup/templates/...
+#
+# Docker COPY can access installed packages during the image build.
 # ---------------------------------------------------------------------------
-hooks.Filters.ENV_TEMPLATE_ROOTS.add_item(
-    str(importlib.resources.files("tutor_restrictedsignup") / "templates")
-)
-hooks.Filters.ENV_TEMPLATE_TARGETS.add_item(("restrictedsignup/build", "build/openedx"))
-
 CUSTOM_EMAIL_TEMPLATE_DOCKERFILE_PATCH = """
 {% if RESTRICTEDSIGNUP_CUSTOM_EMAIL_TEMPLATE %}
-COPY --chown=app:app restrictedsignup/build/openedx/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/subject.txt /openedx/edx-platform/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/subject.txt
-COPY --chown=app:app restrictedsignup/build/openedx/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/body.txt /openedx/edx-platform/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/body.txt
-COPY --chown=app:app restrictedsignup/build/openedx/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/body.html /openedx/edx-platform/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/body.html
-COPY --chown=app:app restrictedsignup/build/openedx/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/from_name.txt /openedx/edx-platform/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/from_name.txt
-COPY --chown=app:app restrictedsignup/build/openedx/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/head.html /openedx/edx-platform/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/head.html
-COPY --chown=app:app restrictedsignup/build/openedx/openedx/core/djangoapps/ace_common/templates/ace_common/edx_ace/common/base_body.html /openedx/edx-platform/openedx/core/djangoapps/ace_common/templates/ace_common/edx_ace/common/base_body.html
+# Copy custom email templates from the installed plugin package
+# (guaranteed to exist because MANIFEST.in + pyproject.toml package-data includes them)
+COPY --chown=app:app \\
+  /openedx/venv/lib/python*/site-packages/tutor_restrictedsignup/templates/restrictedsignup/build/openedx/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/subject.txt \\
+  /openedx/edx-platform/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/subject.txt
+
+COPY --chown=app:app \\
+  /openedx/venv/lib/python*/site-packages/tutor_restrictedsignup/templates/restrictedsignup/build/openedx/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/body.txt \\
+  /openedx/edx-platform/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/body.txt
+
+COPY --chown=app:app \\
+  /openedx/venv/lib/python*/site-packages/tutor_restrictedsignup/templates/restrictedsignup/build/openedx/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/body.html \\
+  /openedx/edx-platform/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/body.html
+
+COPY --chown=app:app \\
+  /openedx/venv/lib/python*/site-packages/tutor_restrictedsignup/templates/restrictedsignup/build/openedx/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/from_name.txt \\
+  /openedx/edx-platform/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/from_name.txt
+
+COPY --chown=app:app \\
+  /openedx/venv/lib/python*/site-packages/tutor_restrictedsignup/templates/restrictedsignup/build/openedx/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/head.html \\
+  /openedx/edx-platform/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/head.html
+
+COPY --chown=app:app \\
+  /openedx/venv/lib/python*/site-packages/tutor_restrictedsignup/templates/restrictedsignup/build/openedx/openedx/core/djangoapps/ace_common/templates/ace_common/edx_ace/common/base_body.html \\
+  /openedx/edx-platform/openedx/core/djangoapps/ace_common/templates/ace_common/edx_ace/common/base_body.html
 {% endif %}
 """
 

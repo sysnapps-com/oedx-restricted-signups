@@ -1,23 +1,23 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=45", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "tutor-contrib-restrictedsignup"
 version = "1.3.0"
-description = "Tutor plugin: disable public self-registration and enable instructor-driven CSV account creation + enrollment on Open edX"
+description = "Disable public registration and enable instructor-driven CSV account creation for Open edX via Tutor"
 readme = "README.md"
 requires-python = ">=3.8"
-license = { text = "AGPL-3.0-or-later" }
-dependencies = ["tutor>=17.0.0"]
-urls = { Repository = "https://github.com/sysnapps-com/oedx-restricted-signups" }
+license = {text = "AGPL-3.0"}
+authors = [
+    {name = "Sysnapps", email = "contact@sysnapps.com"}
+]
+dependencies = [
+    "tutor>=17.0.0",
+]
 
-[project.entry-points."tutor.plugin.v1"]
-restrictedsignup = "tutor_restrictedsignup.plugin"
-
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["tutor_restrictedsignup*"]
+[tool.setuptools]
+packages = ["tutor_restrictedsignup"]
 
 [tool.setuptools.package-data]
 tutor_restrictedsignup = ["templates/**/*"]
