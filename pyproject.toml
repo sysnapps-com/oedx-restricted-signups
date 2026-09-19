@@ -16,6 +16,13 @@ dependencies = [
     "tutor>=17.0.0",
 ]
 
+[project.urls]
+Homepage = "https://github.com/sysnapps-com/oedx-restricted-signups"
+Repository = "https://github.com/sysnapps-com/oedx-restricted-signups"
+
+[project.entry-points."tutor.plugin.v1"]
+restrictedsignup = "tutor_restrictedsignup.plugin"
+
 [tool.setuptools]
 packages = ["tutor_restrictedsignup"]
 
