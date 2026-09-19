@@ -127,12 +127,21 @@ hooks.Filters.ENV_PATCHES.add_item(
 
 # ---------------------------------------------------------------------------
 # 5. FORCE LEGACY INSTRUCTOR DASHBOARD
+#
+# CRITICAL FIX: Read template file lazily at hook registration time,
+# not at module import time. This ensures ENV_TEMPLATE_ROOTS has been
+# set up before we try to read the template.
 # ---------------------------------------------------------------------------
-INIT_TASK_CONTENT = env.read_template_file(
-    "restrictedsignup", "tasks", "lms", "init", "restrictedsignup.sh"
-)
+def get_init_task_content():
+    """Lazily read the init task template when the hook is registered"""
+    return env.read_template_file(
+        "restrictedsignup", "tasks", "lms", "init", "restrictedsignup.sh"
+    )
+
+
+# Register the init task with lazy loading
 _init_filter = getattr(hooks.Filters, "CLI_DO_INIT_TASKS", None) or getattr(
     hooks.Filters, "COMMANDS_INIT", None
 )
 if _init_filter is not None:
-    _init_filter.add_item(("lms", INIT_TASK_CONTENT))
+    _init_filter.add_item(("lms", get_init_task_content()))
