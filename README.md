@@ -15,8 +15,7 @@ course enrollment.
 | 2 | "Register" link/button hidden in the Authn MFE login page | `SHOW_REGISTRATION_LINKS = False` (+ mirrored into `MFE_CONFIG`) |
 | 3 | Instructor CSV account-creation + enrollment enabled | `FEATURES["ALLOW_AUTOMATED_SIGNUPS"] = True` |
 | 4 | (optional, on by default) New CSV-created accounts skip the email-confirmation step | `FEATURES["SKIP_EMAIL_VALIDATION"] = True` |
-| 5 | (optional, off by default) Custom email sent to CSV-created users | Overrides the ACE email templates in the image |
-| 6 | (optional, **on by default**) Forces the legacy Instructor Dashboard, where the CSV upload UI actually lives | Sets the `instructor.legacy_instructor_dashboard` waffle flag at LMS init |
+| 5 | (optional, **on by default**) Forces the legacy Instructor Dashboard, where the CSV upload UI actually lives | Sets the `instructor.legacy_instructor_dashboard` waffle flag at LMS init |
 
 **Why both #1 and #2 are needed:** disabling `ALLOW_PUBLIC_ACCOUNT_CREATION`
 only blocks registration *server-side* — several operators report the
@@ -25,7 +24,7 @@ only blocks registration *server-side* — several operators report the
 you get both effects (link hidden **and** the endpoint refuses signups if
 someone hits it directly).
 
-## ⚠️ Why you might not see the CSV upload section (#6, read this first)
+## ⚠️ Why you might not see the CSV upload section (#5, read this first)
 
 As of the Open edX **Verawood** release (April 2026), the Instructor
 Dashboard's default frontend was switched from the old server-rendered
@@ -117,9 +116,7 @@ All settings are booleans, changeable with `tutor config save --set NAME=value`:
 | `RESTRICTEDSIGNUP_ENABLE_AUTOMATED_SIGNUPS` | `True` | Master switch for #3 |
 | `RESTRICTEDSIGNUP_HIDE_REGISTRATION_LINKS` | `True` | Master switch for #2 |
 | `RESTRICTEDSIGNUP_SKIP_EMAIL_VALIDATION` | `True` | Master switch for #4 |
-| `RESTRICTEDSIGNUP_CUSTOM_EMAIL_TEMPLATE` | `False` | Master switch for #5 |
-| `RESTRICTEDSIGNUP_FORCE_LEGACY_DASHBOARD` | `True` | Master switch for #6 — see warning above |
-| `RESTRICTEDSIGNUP_EMAIL_LOGO_URL` | `""` (empty) | Logo shown in ACE emails when #5 is on — **must be set** to a real URL before enabling #5, or the logo renders broken |
+| `RESTRICTEDSIGNUP_FORCE_LEGACY_DASHBOARD` | `True` | Master switch for #5 — see warning above |
 
 Example — keep everything except the email-validation skip:
 
@@ -128,109 +125,6 @@ tutor config save --set RESTRICTEDSIGNUP_SKIP_EMAIL_VALIDATION=false
 tutor images build openedx
 tutor local restart lms cms
 ```
-
-## Custom email template (optional, `RESTRICTEDSIGNUP_CUSTOM_EMAIL_TEMPLATE`)
-
-edx-platform's "account created + enrolled" ACE email is made of **5 files**,
-all under:
-```
-tutor_restrictedsignup/templates/restrictedsignup/build/openedx/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/
-  subject.txt      — email subject line
-  body.txt         — plain-text fallback body
-  body.html        — HTML body
-  from_name.txt    — sender display name
-  head.html        — <style>/CSS block used by body.html
-```
-plus a **shared base template**, used by every instructor ACE email (account
-creation, enrollment, beta-tester add/remove, etc.), not just this one:
-```
-tutor_restrictedsignup/templates/restrictedsignup/build/openedx/openedx/core/djangoapps/ace_common/templates/ace_common/edx_ace/common/base_body.html
-```
-(Confirmed against a real Sumac-based Tutor deployment — your release may
-differ, always verify per step 1 below.)
-
-`subject.txt` and `body.html` ship pre-filled with a real, tested Spanish
-version of the account-creation email (confirmed variable names —
-`platform_name`, `course_name`, `email_address`, `password`, `site_name`,
-`course_url` — sourced directly from edx-platform's stock English template,
-not guessed). Edit the wording freely, but don't rename or invent new
-`{{ variable }}` names: edx-platform only supplies the ones listed above for
-this particular email — there is, for example, no per-user `username`
-variable available here, so don't add `{{ user_username }}` expecting it to
-populate.
-
-### Fixing the email logo (`RESTRICTEDSIGNUP_EMAIL_LOGO_URL`)
-
-The legacy Instructor Dashboard renders its emails through
-`base_body.html`, which normally shows `{{ logo_url }}` — but that variable
-resolves to your **default** Open edX theme's logo, even when your site
-correctly runs a custom theme (e.g. a Paragon-based one) everywhere else.
-This is a known quirk of the legacy dashboard's rendering context, not a
-misconfiguration on your end.
-
-The shipped `base_body.html` override hardcodes your logo instead of
-relying on `{{ logo_url }}`. Set it via:
-```bash
-tutor config save --set RESTRICTEDSIGNUP_EMAIL_LOGO_URL="https://your-cdn/logo.png"
-```
-**This must be a real, publicly reachable image URL** — leaving it blank
-(the default) renders a broken image (`<img src="">`) in every one of these
-emails, since the value is spliced directly into the HTML.
-
-Everything else in `base_body.html` (social links, footer, mobile app
-buttons, unsubscribe link) is left as edx-platform's stock behavior — only
-the logo line is overridden.
-
-### Steps to customize further
-
-1. **Pull your platform's real template files** if you want to verify
-   filenames/content beyond what's already confirmed here:
-   ```bash
-   tutor local exec lms find /openedx/edx-platform/lms/templates/instructor/edx_ace/accountcreationandenrollment -type f
-   tutor local exec lms cat /openedx/edx-platform/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/body.txt
-   tutor local exec lms cat /openedx/edx-platform/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/from_name.txt
-   tutor local exec lms cat /openedx/edx-platform/lms/templates/instructor/edx_ace/accountcreationandenrollment/email/head.html
-   ```
-2. **Edit `subject.txt` / `body.html`** (or `body.txt`, `from_name.txt`,
-   `head.html`) to change wording/branding further.
-
-   **Critical — keep the `{% raw %}` / `{% endraw %}` wrapper around your
-   content.** Tutor renders every template file through its own Jinja
-   engine before the file ever reaches edx-platform. `{{ platform_name }}`,
-   `{{ password }}`, `{{ site_name }}`, etc. are **Django/ACE variables**,
-   meant to be filled in later by edx-platform when it actually sends the
-   email — not by Tutor. If you paste content in *without* the `{% raw %}`
-   wrapper, Tutor's Jinja will try to resolve those variables itself at
-   build time, using its own (different) config namespace, and fail with:
-   ```
-   Error rendering template ... Error: Missing configuration value: 'site_name' is undefined
-   ```
-   `base_body.html` uses a different pattern — most of the file is inside
-   one `{% raw %}` block, but it briefly closes/reopens around
-   `{{ RESTRICTEDSIGNUP_EMAIL_LOGO_URL }}` so *that one* value **is**
-   substituted by Tutor at build time (it's a plugin config value, not a
-   Django/ACE one). Don't remove that specific `{% endraw %}...{% raw %}`
-   pair, or the logo URL will stop being substituted.
-3. If a `find` shows **different filenames** than the 5 listed above,
-   rename the files in this plugin to match, and update the `COPY` lines in
-   `tutor_restrictedsignup/plugin.py` (`CUSTOM_EMAIL_TEMPLATE_DOCKERFILE_PATCH`)
-   accordingly.
-4. Enable and rebuild:
-   ```bash
-   tutor config save --set RESTRICTEDSIGNUP_CUSTOM_EMAIL_TEMPLATE=true
-   tutor config save --set RESTRICTEDSIGNUP_EMAIL_LOGO_URL="https://your-cdn/logo.png"
-   tutor images build openedx
-   tutor local restart lms cms
-   ```
-5. **Test before relying on it**: trigger a real CSV upload against a test
-   course/user and check the email that arrives, in both HTML and plain-text
-   mail clients, and confirm the logo actually loads (some mail clients
-   block remote images by default — that's normal, not a bug).
-
-This ships **off by default** precisely because both the filenames/content
-and the logo-URL fix are specific to your deployment — never enable this
-without setting `RESTRICTEDSIGNUP_EMAIL_LOGO_URL` and reviewing the
-Spanish wording against your own branding voice.
 
 ## Known caveats / things to check on your platform
 
@@ -251,6 +145,11 @@ Spanish wording against your own branding voice.
   enrollment/account-creation via this screen is intended for smaller
   courses, not massive ones. For very large cohorts, consider the
   bulk-enroll REST API instead.
+
+## Custom email templates and branding
+
+For custom email templates across your platform, use a dedicated email-templating plugin (separate project).
+For logo and theme branding that applies uniformly across the LMS, use the Paragon theme plugin or a dedicated branding plugin.
 
 ## Uninstall / revert
 
